@@ -1,0 +1,116 @@
+1. Mediante SQL liste la cantidad de operaciones que realizó cada cliente en el último mes. 
+
+SELECT  c.CustomerID,
+        c.CustomerName,
+        COUNT(o.OrderID) AS total_operaciones
+FROM Customers c
+JOIN Orders o  ON o.CustomerID = c.CustomerID
+WHERE o.OrderDate >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)
+GROUP BY c.CustomerID, c.CustomerName;
+
+
+SELECT c.CustomerID,c.CustomerName, COUNT(o.OrderID) AS CantidadOperaciones
+FROM Customers c
+LEFT JOIN Orders o ON c.CustomerID = o.CustomerID
+GROUP BY c.CustomerID, c.CustomerName;
+
+2. Mediante SQL obtener un listado con los nombres de todas las ciudades y el total facturado para cada ciudad. 
+SELECT  c.City,
+        IFNULL(SUM(p.Price * od.Quantity),0) AS total_facturado
+FROM Customers c
+LEFT JOIN Orders o        ON o.CustomerID = c.CustomerID
+LEFT JOIN OrderDetails od ON od.OrderID   = o.OrderID
+JOIN Products p ON p.ProductID   = od.ProductID
+GROUP BY c.City
+ORDER BY total_facturado DESC;
+
+3. Mediante SQL obtener el nombre de los 5 vendedores de mayor monto vendido en los once últimos meses 
+SELECT  e.EmployeeID,
+        CONCAT(e.FirstName,' ',e.LastName) AS vendedor,
+        SUM(p.Price * od.Quantity) AS monto_vendido
+FROM Employees e
+JOIN Orders o        ON o.EmployeeID = e.EmployeeID
+JOIN OrderDetails od ON od.OrderID   = o.OrderID
+JOIN Products p ON p.ProductID   = od.ProductID
+WHERE o.OrderDate >= DATE_SUB(CURDATE(), INTERVAL 11 MONTH)
+GROUP BY e.EmployeeID, vendedor
+ORDER BY monto_vendido DESC
+LIMIT 5;
+
+
+4. Mediante SQL obtener los nombres de los proveedores cuyos productos ofertados por el almacén no fueron vendidos. 
+SELECT  s.SupplierID,
+        s.SupplierName
+FROM Suppliers s
+JOIN Products p        ON p.SupplierID = s.SupplierID
+LEFT JOIN OrderDetails od ON od.ProductID = p.ProductID
+GROUP BY s.SupplierID, s.SupplierName
+HAVING SUM(od.Quantity) IS NULL;   -- nunca aparece en ventas
+
+
+5. Mediante SQL obtener la cantidad de clientes, cuando esta exceda los 100. 
+SELECT COUNT(*) AS cantidad_clientes
+FROM Customers
+HAVING COUNT(*) > 100;
+
+
+6. Mediante SQL obtener la cantidad vendida de cada producto. 
+SELECT  p.ProductID,
+        p.ProductName,
+        IFNULL(SUM(od.Quantity),0) AS cantidad_vendida
+FROM Products p
+LEFT JOIN OrderDetails od ON od.ProductID = p.ProductID
+GROUP BY p.ProductID, p.ProductName;
+
+
+7. Mediante SQL obtener la cantidad vendida de cada producto por cliente 
+SELECT  c.CustomerID,
+        c.CustomerName,
+        p.ProductID,
+        p.ProductName,
+        SUM(od.Quantity) AS cantidad_vendida
+FROM Customers c
+JOIN Orders o        ON o.CustomerID = c.CustomerID
+JOIN OrderDetails od ON od.OrderID   = o.OrderID
+JOIN Products p      ON p.ProductID  = od.ProductID
+GROUP BY c.CustomerID, c.CustomerName,
+         p.ProductID, p.ProductName
+ORDER BY c.CustomerName, p.ProductName;
+
+
+8. Mediante SQL obtener los 5 productos más vendidos 
+SELECT  p.ProductID,
+        p.ProductName,
+        SUM(od.Quantity) AS cantidad_vendida
+FROM Products p
+JOIN OrderDetails od ON od.ProductID = p.ProductID
+GROUP BY p.ProductID, p.ProductName
+ORDER BY cantidad_vendida DESC
+LIMIT 5;
+
+
+9. Mediante SQL obtener los 5 productos de mayor venta en los últimos 6 meses 
+SELECT  p.ProductID,
+        p.ProductName,
+        SUM(od.Quantity) AS cantidad_vendida
+FROM Products p
+JOIN OrderDetails od ON od.ProductID = p.ProductID
+JOIN Orders o        ON o.OrderID    = od.OrderID
+WHERE o.OrderDate >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+GROUP BY p.ProductID, p.ProductName
+ORDER BY cantidad_vendida DESC
+LIMIT 5;
+
+
+10 .Mediante SQL obtener el empleado que ha logrado mayor ingreso a la tienda.
+SELECT  e.EmployeeID,
+        CONCAT(e.FirstName,' ',e.LastName) AS empleado,
+        SUM(p.Price * od.Quantity) AS ingreso_generado
+FROM Employees e
+JOIN Orders o        ON o.EmployeeID = e.EmployeeID
+JOIN OrderDetails od ON od.OrderID   = o.OrderID
+JOIN Products p ON p.ProductID   = od.ProductID
+GROUP BY e.EmployeeID, empleado
+ORDER BY ingreso_generado DESC
+LIMIT 1;
+
